@@ -70,13 +70,13 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Welcome ${user.fullName}',
-          ),
-        ),
-      );
+      Navigator.of(context).pushReplacement(
+  MaterialPageRoute(
+    builder: (_) => DashboardScreen(
+      user: user,
+    ),
+  ),
+);
 
       // Dashboard will be connected here next.
     } catch (e) {
