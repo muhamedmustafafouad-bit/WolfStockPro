@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../models/user_model.dart';
 
+import '../products/products_screen.dart';
+
 class DashboardScreen extends StatelessWidget {
   final UserModel user;
 
@@ -110,11 +112,11 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 12),
 
               _actionTile(
-                context,
-                Icons.add_box_outlined,
-                'Add Product',
-                'Create a new inventory item',
-              ),
+  context,
+  Icons.add_box_outlined,
+  'Add Product',
+  'Create a new inventory item',
+),
 
               _actionTile(
                 context,
@@ -358,10 +360,21 @@ class DashboardScreen extends StatelessWidget {
             ),
 
             ListTile(
-              leading: const Icon(Icons.inventory_2_outlined),
-              title: const Text('Products'),
-              onTap: () {},
-            ),
+  leading: const Icon(Icons.inventory_2_outlined),
+  title: const Text('Products'),
+  onTap: () {
+    Navigator.pop(context);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ProductsScreen(
+          branchId: user.branchId ?? 1,
+        ),
+      ),
+    );
+  },
+),
 
             ListTile(
               leading: const Icon(Icons.category_outlined),
