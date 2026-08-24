@@ -112,12 +112,21 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 12),
               
               _actionTile(
-               context,
-               Icons.add_box_outlined,
-              'Add Product',
-             'Create a new inventory item',
-              ),
-
+  context,
+  Icons.add_box_outlined,
+  'Add Product',
+  'Create a new inventory item',
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ProductsScreen(
+          branchId: user.branchId ?? 1,
+        ),
+      ),
+    );
+  },
+),
               _actionTile(
                 context,
                 Icons.login,
@@ -284,11 +293,13 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _actionTile(
-    BuildContext context,
-    IconData icon,
-    String title,
-    String subtitle,
-  ) {
+  BuildContext context,
+  IconData icon,
+  String title,
+  String subtitle, {
+  VoidCallback? onTap,
+})
+{
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 10),
