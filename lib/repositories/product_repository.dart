@@ -1,84 +1,127 @@
-class ProductModel {
-  final int? id;
-  final String? barcode;
-  final String? sku;
-  final String name;
-  final String? description;
-  final int? categoryId;
-  final int? supplierId;
-  final String unit;
-  final double costPrice;
-  final double sellingPrice;
-  final double minimumStock;
-  final String? imagePath;
-  final bool active;
-  final double quantity;
+import '../database/database_helper.dart';
+import '../models/product_model.dart';
 
-  ProductModel({
-    this.id,
-    this.barcode,
-    this.sku,
-    required this.name,
-    this.description,
-    this.categoryId,
-    this.supplierId,
-    this.unit = 'pcs',
-    this.costPrice = 0,
-    this.sellingPrice = 0,
-    this.minimumStock = 0,
-    this.imagePath,
-    this.active = true,
-    this.quantity = 0,
-  });
+class ProductRepository {
+  final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
 
-  factory ProductModel.fromMap(Map<String, dynamic> map) {
-    return ProductModel(
-      id: map['id'] as int?,
-      barcode: map['barcode'] as String?,
-      sku: map['sku'] as String?,
-      name: map['name'] ?? '',
-      description: map['description'] as String?,
-      categoryId: map['category_id'] as int?,
-      supplierId: map['supplier_id'] as int?,
-      unit: map['unit'] ?? 'pcs',
-      costPrice: _toDouble(map['cost_price']),
-      sellingPrice: _toDouble(map['selling_price']),
-      minimumStock: _toDouble(map['minimum_stock']),
-      imagePath: map['image_path'] as String?,
-      active: map['active'] == 1,
-      quantity: _toDouble(map['quantity']),
+  Future<List<ProductModel>> getProducts({
+    int? branchId,
+  }) async {
+    final db = await _databaseHelper.database;
+
+    final branch = branchId ?? 1;
+
+    final result = await db.rawQuery('''
+      SELECT
+        p.*,
+        COALESCE(s.quantity, 0) AS quantity
+      FROM products p
+      LEFT JOIN stock s
+        ON p.id = s.product_id
+        AND s.branch_id = ?
+      WHERE p.active = 1
+      ORDER BY p.name COLLATE NOCASE ASC
+    ''', [branch]);
+
+    return result
+        .map((map) => ProductModel.fromMap(map))
+        .toList();
+  }
+
+  Future<ProductModel?> getProductById(int id) async {
+    final db = await _databaseHelper.database;
+
+    final result = await db.rawQuery('''
+      SELECT
+        p.*,
+        COALESCE(
+          (SELECT SUM(quantity)
+           FROM stock
+           WHERE product_id = p.id),
+          0
+        ) AS quantity
+      FROM products p
+      WHERE p.id = ?
+      LIMIT 1
+    ''', [id]);
+
+    if (result.isEmpty) {
+      return null;
+    }
+
+    return ProductModel.fromMap(result.first);
+  }
+
+  Future<int> addProduct(ProductModel product) async {
+    final db = await _databaseHelper.database;
+
+    return db.insert(
+      'products',
+      product.toMap()..remove('id'),
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'barcode': barcode,
-      'sku': sku,
-      'name': name,
-      'description': description,
-      'category_id': categoryId,
-      'supplier_id': supplierId,
-      'unit': unit,
-      'cost_price': costPrice,
-      'selling_price': sellingPrice,
-      'minimum_stock': minimumStock,
-      'image_path': imagePath,
-      'active': active ? 1 : 0,
-    };
-  }
-
-  bool get isLowStock => quantity <= minimumStock;
-
-  bool get isOutOfStock => quantity <= 0;
-
-  static double _toDouble(dynamic value) {
-    if (value == null) return 0;
-
-    if (value is num) {
-      return value.toDouble();
+  Future<int> updateProduct(ProductModel product) async {
+    if (product.id == null) {
+      throw Exception('Product ID is required.');
     }
 
-    return double.tryParse(value.toString()) ?? 0;
+    final db = await _databaseHelper.database;
+
+    final data = product.toMap();
+    data.remove('id');
+
+    return db.update(
+      'products',
+      data,
+      where: 'id = ?',
+      whereArgs: [product.id],
+    );
+  }
+
+  Future<int> deleteProduct(int id) async {
+    final db = await _databaseHelper.database;
+
+    return db.update(
+      'products',
+      {'active': 0},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<List<ProductModel>> searchProducts(
+    String query, {
+    int branchId = 1,
+  }) async {
+    final db = await _databaseHelper.database;
+
+    final search = '%${query.trim()}%';
+
+    final result = await db.rawQuery('''
+      SELECT
+        p.*,
+        COALESCE(s.quantity, 0) AS quantity
+      FROM products p
+      LEFT JOIN stock s
+        ON p.id = s.product_id
+        AND s.branch_id = ?
+      WHERE p.active = 1
+        AND (
+          p.name LIKE ?
+          OR p.barcode LIKE ?
+          OR p.sku LIKE ?
+        )
+      ORDER BY p.name COLLATE NOCASE ASC
+    ''', [
+      branchId,
+      search,
+      search,
+      search,
+    ]);
+
+    return result
+        .map((map) => ProductModel.fromMap(map))
+        .toList();
   }
 }
