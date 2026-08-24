@@ -317,15 +317,17 @@ class DashboardScreen extends StatelessWidget {
         trailing: const Icon(
           Icons.chevron_right,
         ),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                '$title module will be available soon.',
-              ),
-            ),
-          );
-        },
+        onTap: onTap ??
+    () {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '$title module will be available soon.',
+          ),
+        ),
+      );
+    },
+        
       ),
     );
   }
