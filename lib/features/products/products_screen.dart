@@ -1,3 +1,4 @@
+import 'add_product_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../../models/product_model.dart';
@@ -191,11 +192,21 @@ class _ProductsScreenState extends State<ProductsScreen> {
       ),
 
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          _showMessage(
-            'Add Product screen is next.',
-          );
-        },
+        onPressed: () async {
+  final added = await Navigator.of(context).push<bool>(
+    MaterialPageRoute(
+      builder: (_) => AddProductScreen(
+        branchId: widget.branchId,
+      ),
+    ),
+  );
+
+  if (added == true) {
+    await _loadProducts();
+
+    _showMessage('Product added successfully.');
+  }
+},
         icon: const Icon(Icons.add),
         label: const Text('Add Product'),
       ),
