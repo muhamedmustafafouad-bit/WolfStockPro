@@ -1,3 +1,4 @@
+import 'package:sqflite/sqflite.dart';
 import '../database/database_helper.dart';
 import '../models/product_model.dart';
 
@@ -123,5 +124,40 @@ class ProductRepository {
     return result
         .map((map) => ProductModel.fromMap(map))
         .toList();
+        }
+  
+    Future<void> setInitialStock({
+  required int productId,
+  required int branchId,
+  required double quantity,
+}) async {
+  final db = await _databaseHelper.database;
+
+  final now = DateTime.now().toIso8601String();
+
+  await db.insert(
+    'stock',
+    {
+      'product_id': productId,
+      'branch_id': branchId,
+      'quantity': quantity,
+      'updated_at': now,
+    },
+    conflictAlgorithm: ConflictAlgorithm.replace,
+  );
+
+  await db.insert(
+    'stock_movements',
+    {
+      'product_id': productId,
+      'branch_id': branchId,
+      'user_id': null,
+      'movement_type': 'INITIAL',
+      'quantity': quantity,
+      'reference_no': null,
+      'notes': 'Initial stock',
+      'created_at': now,
+    },
+  );
   }
 }
