@@ -110,13 +110,13 @@ class DashboardScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 12),
-
+              
               _actionTile(
-  context,
-  Icons.add_box_outlined,
-  'Add Product',
-  'Create a new inventory item',
-),
+               context,
+               Icons.add_box_outlined,
+              'Add Product',
+             'Create a new inventory item',
+              ),
 
               _actionTile(
                 context,
