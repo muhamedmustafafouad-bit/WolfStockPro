@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'database/database_helper.dart';
+import 'features/auth/login_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +27,7 @@ class WolfStockProApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF0B0F14),
       ),
 
-      home: const StartupScreen(),
+      home: const LoginScreen(),
     );
   }
 }
