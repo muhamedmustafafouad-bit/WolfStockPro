@@ -42,12 +42,39 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         },
         child: const Icon(Icons.add),
       ),
-      body: const Center(
-        child: Text(
-          "No Categories Yet",
-          style: TextStyle(fontSize: 20),
-        ),
-      ),
+      body: _loading
+    ? const Center(
+        child: CircularProgressIndicator(),
+      )
+    : ListView.builder(
+        itemCount: _categories.length,
+        itemBuilder: (context, index) {
+          final category = _categories[index];
+
+          return ListTile(
+            leading: const Icon(Icons.category),
+
+            title: Text(category.name),
+
+            subtitle: Text(
+              category.description ?? '',
+            ),
+
+            trailing: IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () async {
+                if (category.id != null) {
+                  await _repository.deleteCategory(
+                    category.id!,
+                  );
+
+                  _loadCategories();
+                }
+              },
+            ),
+          );
+        },
+      )
     );
   }
 }
