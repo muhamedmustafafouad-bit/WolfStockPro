@@ -1,3 +1,4 @@
+import 'edit_category_dialog.dart';
 import 'add_category_dialog.dart';
 import '../../models/category_model.dart';
 import '../../repositories/category_repository.dart';
@@ -64,18 +65,44 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               category.description ?? '',
             ),
 
-            trailing: IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () async {
-                if (category.id != null) {
-                  await _repository.deleteCategory(
-                    category.id!,
-                  );
+            trailing: Row(
+  mainAxisSize: MainAxisSize.min,
+  children: [
 
-                  _loadCategories();
-                }
-              },
-            ),
+    IconButton(
+      icon: const Icon(Icons.edit),
+      onPressed: () async {
+
+        final edited =
+            await showDialog<bool>(
+          context: context,
+          builder: (_) =>
+              EditCategoryDialog(
+            category: category,
+          ),
+        );
+
+        if (edited == true) {
+          _loadCategories();
+        }
+      },
+    ),
+
+    IconButton(
+      icon: const Icon(Icons.delete),
+      onPressed: () async {
+
+        if (category.id != null) {
+          await _repository.deleteCategory(
+            category.id!,
+          );
+
+          _loadCategories();
+        }
+      },
+    ),
+  ],
+),
           );
         },
       )
