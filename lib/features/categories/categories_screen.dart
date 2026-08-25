@@ -1,3 +1,4 @@
+import 'add_category_dialog.dart';
 import '../../models/category_model.dart';
 import '../../repositories/category_repository.dart';
 import 'package:flutter/material.dart';
@@ -33,15 +34,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     });
   }
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Add Category (Coming Soon)"),
-            ),
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
+  child: const Icon(Icons.add),
+  onPressed: () async {
+    final added = await showDialog<bool>(
+      context: context,
+      builder: (_) => const AddCategoryDialog(),
+    );
+
+    if (added == true) {
+      _loadCategories();
+    }
+  },
+),
       body: _loading
     ? const Center(
         child: CircularProgressIndicator(),
