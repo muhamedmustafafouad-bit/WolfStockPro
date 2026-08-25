@@ -17,6 +17,20 @@ class CategoryRepository {
         .toList();
   }
 
+Future<int> updateCategory(
+  CategoryModel category,
+) async {
+  final db = await _databaseHelper.database;
+
+  return db.update(
+    'categories',
+    category.toMap()..remove('id'),
+    where: 'id=?',
+    whereArgs: [category.id],
+  );
+}
+
+  
   Future<int> addCategory(CategoryModel category) async {
     final db = await _databaseHelper.database;
 
