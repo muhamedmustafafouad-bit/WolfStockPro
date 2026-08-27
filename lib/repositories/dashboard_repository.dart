@@ -3,6 +3,15 @@ import '../../repositories/dashboard_repository.dart';
 import '../database/database_helper.dart';
 
 class DashboardRepository {
+
+  final DashboardRepository _repository =
+    DashboardRepository();
+
+int products = 0;
+int suppliers = 0;
+int categories = 0;
+int movements = 0;
+  
   final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
 
   Future<int> totalProducts() async {
