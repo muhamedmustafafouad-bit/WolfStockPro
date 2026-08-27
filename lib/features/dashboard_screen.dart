@@ -34,6 +34,17 @@ void initState() {
   _loadDashboard();
 }
 
+Future<void> _loadDashboard() async {
+  products = await _repository.totalProducts();
+  suppliers = await _repository.totalSuppliers();
+  categories = await _repository.totalCategories();
+  movements = await _repository.totalMovements();
+
+  if (!mounted) return;
+
+  setState(() {});
+}
+
 @override
 Widget build(BuildContext context) {
 
