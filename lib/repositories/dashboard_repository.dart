@@ -1,3 +1,5 @@
+import '../../repositories/dashboard_repository.dart';
+
 import '../database/database_helper.dart';
 
 class DashboardRepository {
