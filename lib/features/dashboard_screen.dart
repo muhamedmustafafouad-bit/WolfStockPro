@@ -24,12 +24,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final DashboardRepository _repository = DashboardRepository();
 
   int products = 0;
-  int suppliers = 0;
-  int categories = 0;
-  int movements = 0;
+int suppliers = 0;
+int categories = 0;
+int movements = 0;
 
-  @override
-  Widget build(BuildContext context) {
+@override
+void initState() {
+  super.initState();
+  _loadDashboard();
+}
+
+@override
+Widget build(BuildContext context) {
 
 
     return Scaffold(
