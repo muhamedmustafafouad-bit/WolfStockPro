@@ -4,13 +4,21 @@ import '../../models/user_model.dart';
 
 import '../products/products_screen.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   final UserModel user;
 
   const DashboardScreen({
     super.key,
     required this.user,
   });
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+
+  UserModel get user => widget.user;
 
   @override
   Widget build(BuildContext context) {
