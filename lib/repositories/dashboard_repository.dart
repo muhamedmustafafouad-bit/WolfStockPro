@@ -1,52 +1,46 @@
-import '../../repositories/dashboard_repository.dart';
-
 import '../database/database_helper.dart';
 
 class DashboardRepository {
-
-  final DashboardRepository _repository =
-    DashboardRepository();
-
-int products = 0;
-int suppliers = 0;
-int categories = 0;
-int movements = 0;
-  
-  final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
+  final DatabaseHelper _databaseHelper =
+      DatabaseHelper.instance;
 
   Future<int> totalProducts() async {
     final db = await _databaseHelper.database;
 
-    final result =
-        await db.rawQuery("SELECT COUNT(*) total FROM products");
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) AS total FROM products',
+    );
 
-    return result.first["total"] as int;
+    return (result.first['total'] as int?) ?? 0;
   }
 
   Future<int> totalCategories() async {
     final db = await _databaseHelper.database;
 
-    final result =
-        await db.rawQuery("SELECT COUNT(*) total FROM categories");
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) AS total FROM categories',
+    );
 
-    return result.first["total"] as int;
+    return (result.first['total'] as int?) ?? 0;
   }
 
   Future<int> totalSuppliers() async {
     final db = await _databaseHelper.database;
 
-    final result =
-        await db.rawQuery("SELECT COUNT(*) total FROM suppliers");
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) AS total FROM suppliers',
+    );
 
-    return result.first["total"] as int;
+    return (result.first['total'] as int?) ?? 0;
   }
 
   Future<int> totalMovements() async {
     final db = await _databaseHelper.database;
 
     final result = await db.rawQuery(
-        "SELECT COUNT(*) total FROM stock_movements");
+      'SELECT COUNT(*) AS total FROM stock_movements',
+    );
 
-    return result.first["total"] as int;
+    return (result.first['total'] as int?) ?? 0;
   }
 }
