@@ -129,7 +129,12 @@ Widget build(BuildContext context) {
                     context,
                     icon: Icons.trending_down,
                     title: "Today's Out",
-                    value: '0',
+                    _statCard(
+  context,
+  icon: Icons.trending_down,
+  title: "Today's Out",
+  value: movements.toString(),
+),
                   ),
                 ],
               ),
