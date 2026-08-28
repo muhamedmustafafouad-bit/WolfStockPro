@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/user_model.dart';
 import '../../repositories/dashboard_repository.dart';
-
+import '../categories/categories_screen.dart';
 import '../products/products_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -18,37 +18,71 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-
   UserModel get user => widget.user;
 
   final DashboardRepository _repository = DashboardRepository();
 
   int products = 0;
-int suppliers = 0;
-int categories = 0;
-int movements = 0;
+  int suppliers = 0;
+  int categories = 0;
+  int movements = 0;
 
-@override
-void initState() {
-  super.initState();
-  _loadDashboard();
-}
+  @override
+  void initState() {
+    super.initState();
+    _loadDashboard();
+  }
 
-Future<void> _loadDashboard() async {
-  products = await _repository.totalProducts();
-  suppliers = await _repository.totalSuppliers();
-  categories = await _repository.totalCategories();
-  movements = await _repository.totalMovements();
+  Future<void> _loadDashboard() async {
+    try {
+      final results = await Future.wait<int>([
+        _repository.totalProducts(),
+        _repository.totalSuppliers(),
+        _repository.totalCategories(),
+        _repository.totalMovements(),
+      ]);
 
-  if (!mounted) return;
+      if (!mounted) return;
 
-  setState(() {});
-}
+      setState(() {
+        products = results[0];
+        suppliers = results[1];
+        categories = results[2];
+        movements = results[3];
+      });
+    } catch (e) {
+      if (!mounted) return;
 
-@override
-Widget build(BuildContext context) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to load dashboard data: $e'),
+        ),
+      );
+    }
+  }
 
+  Future<void> _openProducts() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ProductsScreen(
+          branchId: user.branchId ?? 1,
+        ),
+      ),
+    );
+  }
 
+  Future<void> _openCategories() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const CategoriesScreen(),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -58,6 +92,11 @@ Widget build(BuildContext context) {
           ),
         ),
         actions: [
+          IconButton(
+            tooltip: 'Refresh',
+            onPressed: _loadDashboard,
+            icon: const Icon(Icons.refresh),
+          ),
           IconButton(
             tooltip: 'Notifications',
             onPressed: () {},
@@ -72,17 +111,12 @@ Widget build(BuildContext context) {
           ),
         ],
       ),
-
       drawer: _buildDrawer(context),
-
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () async {
-            await Future.delayed(
-              const Duration(milliseconds: 500),
-            );
-          },
+          onRefresh: _loadDashboard,
           child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
             children: [
               _buildWelcomeCard(context),
@@ -108,11 +142,11 @@ Widget build(BuildContext context) {
                 childAspectRatio: 1.45,
                 children: [
                   _statCard(
-  context,
-  icon: Icons.inventory_2_outlined,
-  title: 'Products',
-  value: products.toString(),
-),
+                    context,
+                    icon: Icons.inventory_2_outlined,
+                    title: 'Products',
+                    value: products.toString(),
+                  ),
                   _statCard(
                     context,
                     icon: Icons.warning_amber_rounded,
@@ -129,12 +163,7 @@ Widget build(BuildContext context) {
                     context,
                     icon: Icons.trending_down,
                     title: "Today's Out",
-                    _statCard(
-  context,
-  icon: Icons.trending_down,
-  title: "Today's Out",
-  value: movements.toString(),
-),
+                    value: movements.toString(),
                   ),
                 ],
               ),
@@ -150,23 +179,23 @@ Widget build(BuildContext context) {
               ),
 
               const SizedBox(height: 12),
-              
+
               _actionTile(
-  context,
-  Icons.add_box_outlined,
-  'Add Product',
-  'Create a new inventory item',
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ProductsScreen(
-          branchId: user.branchId ?? 1,
-        ),
-      ),
-    );
-  },
-),
+                context,
+                Icons.add_box_outlined,
+                'Add Product',
+                'Create a new inventory item',
+                onTap: _openProducts,
+              ),
+
+              _actionTile(
+                context,
+                Icons.category_outlined,
+                'Categories',
+                'Manage product categories',
+                onTap: _openCategories,
+              ),
+
               _actionTile(
                 context,
                 Icons.login,
@@ -333,13 +362,12 @@ Widget build(BuildContext context) {
   }
 
   Widget _actionTile(
-  BuildContext context,
-  IconData icon,
-  String title,
-  String subtitle, {
-  VoidCallback? onTap,
-})
-{
+    BuildContext context,
+    IconData icon,
+    String title,
+    String subtitle, {
+    VoidCallback? onTap,
+  }) {
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 10),
@@ -358,16 +386,15 @@ Widget build(BuildContext context) {
           Icons.chevron_right,
         ),
         onTap: onTap ??
-    () {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '$title module will be available soon.',
-          ),
-        ),
-      );
-    },
-        
+            () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '$title module will be available soon.',
+                  ),
+                ),
+              );
+            },
       ),
     );
   }
@@ -385,7 +412,9 @@ Widget build(BuildContext context) {
                     Icons.inventory_2_rounded,
                     size: 50,
                   ),
+
                   const SizedBox(height: 10),
+
                   const Text(
                     'WolfStock Pro',
                     style: TextStyle(
@@ -393,6 +422,7 @@ Widget build(BuildContext context) {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+
                   Text(
                     user.username,
                     style: TextStyle(
@@ -413,26 +443,21 @@ Widget build(BuildContext context) {
             ),
 
             ListTile(
-  leading: const Icon(Icons.inventory_2_outlined),
-  title: const Text('Products'),
-  onTap: () {
-    Navigator.pop(context);
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ProductsScreen(
-          branchId: user.branchId ?? 1,
-        ),
-      ),
-    );
-  },
-),
+              leading: const Icon(Icons.inventory_2_outlined),
+              title: const Text('Products'),
+              onTap: () {
+                Navigator.pop(context);
+                _openProducts();
+              },
+            ),
 
             ListTile(
               leading: const Icon(Icons.category_outlined),
               title: const Text('Categories'),
-              onTap: () {},
+              onTap: () {
+                Navigator.pop(context);
+                _openCategories();
+              },
             ),
 
             ListTile(
