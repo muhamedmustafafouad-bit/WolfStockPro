@@ -108,11 +108,11 @@ Widget build(BuildContext context) {
                 childAspectRatio: 1.45,
                 children: [
                   _statCard(
-                    context,
-                    icon: Icons.inventory_2_outlined,
-                    title: 'Products',
-                    value: '0',
-                  ),
+  context,
+  icon: Icons.inventory_2_outlined,
+  title: 'Products',
+  value: products.toString(),
+),
                   _statCard(
                     context,
                     icon: Icons.warning_amber_rounded,
