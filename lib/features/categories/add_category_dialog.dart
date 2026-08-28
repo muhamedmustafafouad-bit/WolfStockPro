@@ -13,8 +13,11 @@ class AddCategoryDialog extends StatefulWidget {
 class _AddCategoryDialogState extends State<AddCategoryDialog> {
   final _formKey = GlobalKey<FormState>();
 
-  final _nameController = TextEditingController();
-  final _descriptionController = TextEditingController();
+  final TextEditingController _nameController =
+      TextEditingController();
+
+  final TextEditingController _descriptionController =
+      TextEditingController();
 
   final CategoryRepository _repository = CategoryRepository();
 
@@ -28,71 +31,124 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
   }
 
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     setState(() {
       _saving = true;
     });
 
-    await _repository.addCategory(
-      CategoryModel(
-        name: _nameController.text.trim(),
-        description: _descriptionController.text.trim(),
-      ),
-    );
+    try {
+      await _repository.addCategory(
+        CategoryModel(
+          name: _nameController.text.trim(),
+          description: _descriptionController.text.trim().isEmpty
+              ? null
+              : _descriptionController.text.trim(),
+        ),
+      );
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    Navigator.pop(context, true);
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _saving = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Unable to add category: $e',
+          ),
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("Add Category"),
+      title: const Text(
+        'Add Category',
+      ),
 
       content: Form(
         key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: "Category Name",
-              ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return "Required";
-                }
-                return null;
-              },
-            ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _nameController,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  labelText: 'Category Name',
+                  hintText: 'Enter category name',
+                  prefixIcon: Icon(
+                    Icons.category_outlined,
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null ||
+                      value.trim().isEmpty) {
+                    return 'Category name is required';
+                  }
 
-            const SizedBox(height: 12),
-
-            TextFormField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: "Description",
+                  return null;
+                },
               ),
-            ),
-          ],
+
+              const SizedBox(height: 12),
+
+              TextFormField(
+                controller: _descriptionController,
+                textInputAction: TextInputAction.done,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  hintText: 'Optional description',
+                  prefixIcon: Icon(
+                    Icons.description_outlined,
+                  ),
+                  alignLabelWithHint: true,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
 
       actions: [
         TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text("Cancel"),
+          onPressed: _saving
+              ? null
+              : () {
+                  Navigator.pop(context, false);
+                },
+          child: const Text(
+            'Cancel',
+          ),
         ),
 
-        FilledButton(
+        FilledButton.icon(
           onPressed: _saving ? null : _save,
-          child: Text(
-            _saving ? "Saving..." : "Save",
+          icon: _saving
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                  ),
+                )
+              : const Icon(
+                  Icons.save_outlined,
+                ),
+          label: Text(
+            _saving ? 'Saving...' : 'Save',
           ),
         ),
       ],
